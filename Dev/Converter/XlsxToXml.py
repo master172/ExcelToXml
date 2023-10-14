@@ -1,9 +1,8 @@
 #importing the required packages
 from openpyxl import load_workbook
-import xml.etree.ElementTree as ET
-from xml.etree import ElementTree
-from xml.dom import minidom
 import datetime
+import showinfm
+import os
 #openpyxl for excel fileformat and xml.etree.ElementTree for xml
 
 #path th xml document currently static need to make it user choosable
@@ -14,17 +13,30 @@ wb = None
 
 ws = None
 
+num_rows = 0 #worksheet.max_row
+
+num_columns = 0#worksheet.max_column
+
 def set_indexes(path):
     global rowInfo
     global wb
     global ws
-    
+    global num_rows
+    global num_columns
+
+
+
     wb = load_workbook(path)
     ws = wb.active
+
+    num_rows = ws.max_row
+
+    num_columns = ws.max_column
+
     #creating indexs for the data in the row info variable
     #looping over the first row and appending its values to cell_index to create a sort of lookup table for xml data
     #currently only iterating upto 3 colomns max for just row 1
-    for row in ws.iter_rows(min_row=1, max_col=4, max_row=1,values_only=True):
+    for row in ws.iter_rows(min_row=1, max_col=num_columns, max_row=num_rows,values_only=True):
         for cell in row:
             rowInfo.append(cell)
 
@@ -33,11 +45,9 @@ cell_index = 0
 row_index = 0
 
 to_write = ""
-filename = "output.xml"
 
 
 to_write += '<?xml version = "1.0" encoding="UTF-8"?> \n'
-"""print('<?xml version = "1.0" encoding="UTF-8"?>')"""
 
 
 #a function to iterate a certain row (needs revision)
@@ -86,29 +96,67 @@ def convert():
     global to_write
     """print("<data>")"""
     to_write += "<data>\n"
-    for i in ws.iter_rows(min_row = 2,max_col=4,max_row=5,values_only = True):
+    for i in ws.iter_rows(min_row = 2,max_col=num_columns,max_row=num_rows,values_only = True):
         convert_row(i)
     """print("</data>")"""
     to_write += "</data>"
 
-def store_string_as_file(string, filename,pathToFolder):
+def store_string_as_file(string,pathToFolder,filename):
   #Stores a string as a file.
 
   #Args:
   #  string: The string to store.
   #  filename: The name of the file to store the string in.
     print(pathToFolder)
-    with open(pathToFolder + "\\" + filename, "w") as f:
+    print(filename)
+
+    pathToWrite = os.path.join(pathToFolder, filename)
+    print(pathToWrite)
+    with open(pathToWrite, "w") as f:
         f.write(string)
 
-def work(pathToFolder):
+def work(pathToFolder,OutputFileName):
     print("\n")
     print(to_write)
     print("\n")
-    store_string_as_file(to_write,filename,pathToFolder)
 
-def start(pathToFile,pathToFolder):
+    store_string_as_file(to_write,pathToFolder,OutputFileName)
+
+def start(pathToFile,pathToFolder,fileName):
     set_indexes(pathToFile)
     convert()
-    work(pathToFolder)
+    work(pathToFolder,fileName)
+    openExplorer(pathToFolder)
 
+
+def openExplorer(folder_path):
+    showinfm.show_in_file_manager(folder_path)
+    done()
+
+def done():
+    global rowInfo
+    global wb
+    global ws
+
+    global num_rows
+    global num_columns
+
+    global to_write
+
+    global cell_index
+    global row_index
+
+
+    rowInfo = []
+    wb = None
+    ws = None
+
+    num_rows = 0
+    num_columns = 0
+
+    to_write = '<?xml version = "1.0" encoding="UTF-8"?> \n'
+
+    cell_index = 0
+    row_index = 0
+
+    print("done")

@@ -3,10 +3,40 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog
 from  Converter import XlsxToXml as Converter
+import re
 
 global_excel_file = ""
 global_output_folder = ""
 #declaring the necessary functions above their calling
+
+def is_allowed_filename_in_windows(filename):
+    # Check if the filename is empty.
+    if not filename:
+        return False
+    
+    # Check if the filename is one of the reserved names.
+    reserved_names = ['CON', 'PRN', 'AUX', 'NUL', 'COM0', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT0', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9']
+    if filename in reserved_names:
+        return False
+    
+    # Check if the filename contains any invalid characters.
+    invalid_chars = re.compile(r'[<>:"/\|?*]')
+    if invalid_chars.search(filename):
+        return False
+
+    # Check if the filename ends with a space or a period.
+    if filename.endswith(' ') or filename.endswith('.'):
+        return False
+
+    # If the filename passes all of the above checks, it is a valid and allowed filename in Windows.
+    return True
+
+def check_and_add_xml_extension(filename):
+    if not filename.endswith(".xml"):
+        print("no xml file extension adding one")
+        filename += ".xml"
+    return filename
+
 
 def select_folder():
     path = filedialog.askdirectory()
@@ -33,9 +63,23 @@ def select_file():
 
 def convert_command():
     print("starting conversion")
-    if global_excel_file != "" and global_output_folder != "":
-        print(type(global_excel_file), type(global_output_folder))
-        Converter.start(global_excel_file,global_output_folder)
+
+    file = OutputEntry.get()
+
+    if not is_allowed_filename_in_windows(file):
+        print("not allowed")
+        return
+
+
+    file = check_and_add_xml_extension(file)
+
+    if global_excel_file == "" or global_output_folder == "":
+        print("not allowed")
+        return
+    
+    
+    print(type(global_excel_file), type(global_output_folder),type(file))
+    Converter.start(global_excel_file,global_output_folder,file)
 
 #creating a window variable
 window = ctk.CTk()
@@ -78,6 +122,13 @@ Mframe = ctk.CTkFrame(master=frame,
 
 Mframe.place(relx=0.5, rely=0.3, anchor=tk.CENTER)
 
+Dframe = ctk.CTkFrame(master=frame,
+                    width=960,
+                    height=108,
+                    corner_radius=10)
+
+Dframe.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
 Folderlabel = ctk.CTkLabel(master=Mframe,
                         text="Select an output folder",
                         width=720,
@@ -109,6 +160,16 @@ FileButton = ctk.CTkButton(
                         text="SelectFile")
 FileButton.place(relx=0.9,rely=0.5,anchor = tk.CENTER)
 
+OutputEntry = ctk.CTkEntry(master=Dframe,
+                            placeholder_text="Enter a filename",
+                            width=720,
+                            height=25,
+                            corner_radius=10)
+OutputEntry.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+OutputEntry.configure(font=("Arial", 16), fg_color="black")
+
+
 convert_button = ctk.CTkButton(
                             master=frame,
                             corner_radius=10,
@@ -124,3 +185,4 @@ window.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
 #intializing the window
 window.mainloop()
+
