@@ -39,9 +39,11 @@ def convert_command():
 
 #creating a window variable
 window = ctk.CTk()
+window.iconbitmap("D:\myprograms\Python\ExcelWork\ExcelToXml\Resources\Icons\\favicon.ico")
 window.title("ExcelToXml")
+window.resizable(False, False)
 
-#window.iconbitmap("my_icon.ico")
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 

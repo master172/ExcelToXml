@@ -39,8 +39,6 @@ filename = "output.xml"
 to_write += '<?xml version = "1.0" encoding="UTF-8"?> \n'
 """print('<?xml version = "1.0" encoding="UTF-8"?>')"""
 
-print("test print function")
-
 
 #a function to iterate a certain row (needs revision)
 def convert_row(i):
