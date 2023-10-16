@@ -3,9 +3,9 @@ from openpyxl import load_workbook
 import datetime
 import showinfm
 import os
-#openpyxl for excel fileformat and xml.etree.ElementTree for xml
-
-#path th xml document currently static need to make it user choosable
+import sys
+sys.path.append("D:\myprograms\Python\ExcelWork\ExcelToXml\Src\Converter")
+import TallyXml as TX
 
 rowInfo = []
 
@@ -44,11 +44,7 @@ def set_indexes(path):
 cell_index = 0
 row_index = 0
 
-to_write = ""
-
-
-to_write += '<?xml version = "1.0" encoding="UTF-8"?> \n'
-
+to_write = '<?xml version = "1.0" encoding="UTF-8"?> \n'
 
 #a function to iterate a certain row (needs revision)
 def convert_row(i):
@@ -63,18 +59,16 @@ def convert_row(i):
     global row_index
     row_index += 1
 
-    """print("<Entry" + str(row_index-1)+">")"""
 
-    to_write += "   <Entry" + str(row_index-1)+">\n"
+    to_write += "      <Entry" + str(row_index-1)+">\n"
     #for each cell in the current row we print the value along with the row_index 
     #using the rowInfo to know what entry point we are at
     for j in i:
         cell_index += 1
-        """print("<"+rowInfo[cell_index-1]+">",j,"</"+rowInfo[cell_index-1]+">")"""
-        to_write += "          <" + rowInfo[cell_index-1] +">" + convertTuple(j) + "</" +rowInfo[cell_index-1]+">" +  "\n"
 
-    """print("</Entry" + str(row_index-1)+">")"""
-    to_write += "   </Entry" + str(row_index-1)+">\n"
+        to_write += "             <" + rowInfo[cell_index-1] +">" + convertTuple(j) + "</" +rowInfo[cell_index-1]+">" +  "\n"
+
+    to_write += "      </Entry" + str(row_index-1)+">\n"
 
 def convertTuple(tup):
 
@@ -94,12 +88,17 @@ def convertTuple(tup):
 #using a function to iterate over all rows
 def convert():
     global to_write
-    """print("<data>")"""
-    to_write += "<data>\n"
+
+    to_write += "<ENVELOPE>\n"
+    to_write = TX.add_header(to_write)
+    to_write = TX.add_bodyStarting(to_write)
     for i in ws.iter_rows(min_row = 2,max_col=num_columns,max_row=num_rows,values_only = True):
         convert_row(i)
-    """print("</data>")"""
-    to_write += "</data>"
+
+    to_write = TX.add_bodyEnding(to_write)
+    to_write += "</ENVELOPE>"
+
+   
 
 def store_string_as_file(string,pathToFolder,filename):
   #Stores a string as a file.
